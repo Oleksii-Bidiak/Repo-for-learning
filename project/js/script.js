@@ -17,82 +17,90 @@ P.S. Здесь есть несколько вариантов решения з
 
 'use strict';
 
-const movieDB = {
-    movies: [
-        "Логан",
-        "Лига справедливости",
-        "Ла-ла лэнд",
-        "Одержимость",
-        "Скотт Пилигрим против..."
-    ]
-};
-movieDB.movies.sort()
+document.addEventListener('DOMContentLoaded', () => {
 
-const advs = document.querySelectorAll('.promo__adv img'),
-    poster = document.querySelector('.promo__bg'),
-    promoGenre = poster.querySelector('.promo__genre'),
-    movieList = document.querySelectorAll('.promo__interactive-list > li'),
-    form = document.querySelector('.add'),
-    inputForm = form.getElementsByClassName('adding__input'),
-    btnAdd = form.querySelector('button'),
-    checkbox = form.querySelector('[type="checkbox"]');
+    const movieDB = {
+        movies: [
+            "Логан",
+            "Лига справедливости",
+            "Ла-ла лэнд",
+            "Одержимость",
+            "Скотт Пилигрим против..."
+        ]
+    };
 
-advs.forEach(item => {
-    item.remove()
-})
+    const advs = document.querySelectorAll('.promo__adv img'),
+        poster = document.querySelector('.promo__bg'),
+        promoGenre = poster.querySelector('.promo__genre'),
+        movieList = document.querySelector('.promo__interactive-list'),
+        addForm = document.querySelector('form.add'),
+        addInput = addForm.querySelector('.adding__input'),
+        btnAdd = addForm.querySelector('button'),
+        checkbox = addForm.querySelector('[type="checkbox"]');
 
-promoGenre.textContent = 'Драма'
+    const createMovieList = (films, parent) => {
+        parent.innerHTML = ''
+        sortArr(films)
 
-poster.style.backgroundImage = "url('img/bg.jpg')"
-
-movieList.innerHTML = ''
-movieDB.movies.forEach((item, i) => {
-    let movie = item
-    if (movie.length > 21) {
-        movie = movie.slice(0, 19) + '...'
-    }
-
-    movieList.innerHTML += `
-        <li class="promo__interactive-item">${i + 1} ${movie}
-            <div class="delete"></div>
-        </li>
-    `
-})
-
-btnAdd.addEventListener('click', setNewFilm)
-
-function setNewFilm(e) {
-    e.preventDefault()
-
-    const fav = checkbox.value
-
-    if (inputForm[0].value !== '') {
-        const newFilm = inputForm[0].value.split(', ').map(item => { return `${item.split('')[0].toUpperCase()}${item.slice(1)}` }).join('')
-        movieDB.movies.push(newFilm)
-        movieDB.movies.sort()
-
-        if (fav) {
-            console.log('Улюблений')
-        }
-
-        movieList.innerHTML = ''
-        movieDB.movies.forEach((item, i) => {
+        films.forEach((item, i) => {
             let movie = item
             if (movie.length > 21) {
                 movie = movie.slice(0, 19) + '...'
             }
 
-            movieList.innerHTML += `
+            parent.innerHTML += `
                 <li class="promo__interactive-item">${i + 1} ${movie}
                     <div class="delete"></div>
                 </li>
             `
         })
-    }
-}
 
-movieList.forEach(element => {
-    element.addEventListener('click', () => {
-        element.remove()
+        document.querySelectorAll('.delete').forEach((btn, i) => {
+            btn.addEventListener('click', () => {
+                btn.parentElement.remove()
+                movieDB.movies.splice(i, 1)
+
+                createMovieList(films, parent)
+            })
+        })
+    }
+
+    const deleteAdv = arr => {
+        arr.forEach(item => {
+            item.remove()
+        })
+    }
+
+    const makeChanges = () => {
+        promoGenre.textContent = 'Драма'
+
+        poster.style.backgroundImage = "url('img/bg.jpg')"
+    }
+
+    const sortArr = arr => {
+        arr.sort()
+    }
+
+    deleteAdv(advs)
+    createMovieList(movieDB.movies, movieList)
+    makeChanges()
+
+    addForm.addEventListener('submit', (e) => {
+        e.preventDefault()
+
+        const newFilm = addInput.value.split(', ').map(item => { return `${item.split('')[0].toUpperCase()}${item.slice(1)}` }).join('')
+        const favorite = checkbox.checked
+
+        if (newFilm) {
+            movieDB.movies.push(newFilm)
+            sortArr(movieDB.movies)
+            createMovieList(movieDB.movies, movieList)
+        }
+
+        if (favorite) {
+            console.log('Додаємо улюблений фільм')
+        }
+
+        e.target.reset()
     })
-});
+})
